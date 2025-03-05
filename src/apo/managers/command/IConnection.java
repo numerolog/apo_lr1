@@ -26,11 +26,13 @@ public interface IConnection extends ICommandFormer
 		sendText(formCommand(type, Stream.of(args).map(v->String.valueOf(v))));
 	}
 	
-	default void sendCommand(List<String> resp) throws IOException
+	default void sendCommand(List<Object> resp) throws IOException
 	{
-		sendText(formCommand(resp.getFirst(), resp.subList(1, resp.size())));
+		sendText(formCommand(resp.getFirst().toString(), resp.subList(1, resp.size())));
 	}
 
 	void sendText(String text) throws IOException;
+
+	String getIp();
 	
 }

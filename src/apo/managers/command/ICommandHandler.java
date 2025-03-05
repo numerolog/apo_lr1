@@ -4,7 +4,7 @@ import java.util.List;
 
 import apo.server.ServerHandler.ConnectionContext;
 
-public interface ICommandHandler 
+public interface ICommandHandler extends ICommandFormer
 {
 
 	String getType();
@@ -14,6 +14,6 @@ public interface ICommandHandler
 		return true;
 	}
 	
-	List<String> handle(ConnectionContext ctx, String type, String...args) throws Throwable;
+	List<Object> handle(ConnectionContext ctx, String type, String...args) throws Throwable;
 	
 }

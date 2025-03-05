@@ -23,7 +23,7 @@ public class ServerHandler extends TextWebSocketHandler
 
 	public static class ConnectionContext
 	{
-		IConnection connection;
+		public IConnection connection;
 		public IUserSession session;
 	}
 	
@@ -81,6 +81,12 @@ public class ServerHandler extends TextWebSocketHandler
 			s.sendMessage(new TextMessage(text));
 		}
 
+		@Override
+		public String getIp() 
+		{
+			return s.getRemoteAddress().getHostName();
+		}
+
     }
     
     @Override
@@ -102,7 +108,7 @@ public class ServerHandler extends TextWebSocketHandler
     		return;
     	}
     	
-    	List<String> resp = command_manager.handleRaw(ctx, textMessage.getPayload());
+    	List<Object> resp = command_manager.handleRaw(ctx, textMessage.getPayload());
     	System.err.println("send " + resp);
     	ctx.connection.sendCommand(resp);
     }

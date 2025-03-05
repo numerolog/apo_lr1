@@ -10,7 +10,7 @@ public interface ICommandManager extends ICommandHandler
 	String EXIT_COMMAND_TYPE = "EXIT";
 	String CONNECTED_COMMAND_TYPE = "CONN";
 	
-	List<String> handleRaw(ConnectionContext ctx, String rawPacket);
+	List<Object> handleRaw(ConnectionContext ctx, String rawPacket);
 
 	@Override
 	default String getType()
