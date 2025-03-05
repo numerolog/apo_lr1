@@ -53,6 +53,12 @@ public class SessionManagerImpl implements ISessionManager
 	private UserRepository user_repository;
 	
 	Map<String, SessionImpl> sessions = new ConcurrentHashMap<>();
+
+	@Override
+	public IUserSession register(String ip, String login, String password) 
+	{
+		return null;
+	}
 	
 	@Override
 	public IUserSession auth(String ip, String login, String password) throws ManagerException 

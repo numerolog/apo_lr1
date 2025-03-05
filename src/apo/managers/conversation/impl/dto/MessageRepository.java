@@ -28,6 +28,12 @@ public class MessageRepository
 	{
 		return em.createQuery("select m from Message m where m.conversation.id = ?1 and m.id >= ?2", Message.class).setMaxResults(offset_size).setParameter(1, chat_id).setParameter(2, offset_from).getResultList();
 	}
+
+	public Message findById(int chat_id, int message_id) 
+	{
+		return em.createQuery("select m from Message m where m.conversation.id = ?1 and m.id = ?2", Message.class).setParameter(1, chat_id).setParameter(2, message_id).getSingleResult();
+	}
+
 }
 
 

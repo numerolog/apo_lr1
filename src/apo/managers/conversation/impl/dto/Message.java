@@ -1,13 +1,21 @@
 package apo.managers.conversation.impl.dto;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import com.google.gson.annotations.Expose;
 
+import apo.managers.conversation.IConversation;
 import apo.managers.conversation.IMessage;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class Message implements IMessage
@@ -21,6 +29,10 @@ public class Message implements IMessage
     @ManyToOne
     private Conversation conversation;
 
+    @Expose(serialize=false, deserialize=false)
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private Set<MessageReadenBy> readenBy = new HashSet<>();
+    
     @Expose
     private int author_id;
     @Expose
@@ -55,6 +67,10 @@ public class Message implements IMessage
 	@Override
 	public Object getScopeData(int scope_id) {
 		return this;
+	}
+
+	public Set<MessageReadenBy> getReadenBy() {
+		return readenBy;
 	}
 	
 }

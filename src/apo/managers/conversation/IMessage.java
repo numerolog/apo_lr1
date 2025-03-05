@@ -7,6 +7,8 @@ public interface IMessage
 
 	Object getScopeData(int scope_id);
 
+	int getId();
+
 	//int getMessageId();
 
 }

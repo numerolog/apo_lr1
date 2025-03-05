@@ -13,6 +13,7 @@ import apo.managers.conversation.impl.dto.Conversation;
 import apo.managers.conversation.impl.dto.ConversationMember;
 import apo.managers.conversation.impl.dto.ConversationRepository;
 import apo.managers.conversation.impl.dto.Message;
+import apo.managers.conversation.impl.dto.MessageReadenBy;
 import apo.managers.conversation.impl.dto.MessageRepository;
 import apo.managers.event.IEventManager;
 import jakarta.annotation.PostConstruct;
@@ -50,12 +51,24 @@ public class ConversationManagerImpl implements IConversationManager
 	}
 
 	@Override
+	@Transactional
 	public Collection<IMessage> getList(int user_id, int chat_id, int offset_from, int offset_size) throws ManagerException 
 	{
 		if (!getList(user_id).stream().filter(c -> c.getId() == chat_id).findAny().isPresent())
 			throw new ManagerException("user not in conversation");
 
-		return (Collection<IMessage>)(Object)message_repository.find(chat_id, offset_from, offset_size);
+		var r = (Collection<IMessage>)(Object)message_repository.find(chat_id, offset_from, offset_size);
+		
+		for (var msg : r)
+		{
+			
+			
+			
+			
+			
+			markReaden(user_id, chat_id, msg.getId());
+		}
+		return r;
 	}
 
 	@Override
@@ -76,7 +89,24 @@ public class ConversationManagerImpl implements IConversationManager
 		event_manager.noticeNewMessage(user_id, chat_id, msg.getId());
 		return msg;
 	}
-        
+
+	@Override
+	@Transactional
+	public void markReaden(int user_id, int chat_id, int message_id) throws ManagerException
+	{
+		if (!getList(user_id).stream().filter(c -> c.getId() == chat_id).findAny().isPresent())
+			throw new ManagerException("user not in conversation");
+
+//		var conv = getOrLoad(chat_id);
+		var msg = message_repository.findById(chat_id, message_id);
+		var readen = new MessageReadenBy();
+		readen.message = msg;
+		readen.user_id = user_id;
+		msg.getReadenBy().add(readen);
+		
+	}
+	
+	
 	@Override
 	public void addRemoveUser(int user_id, int chat_id, boolean remove, int target_user_id) throws ManagerException 
 	{
