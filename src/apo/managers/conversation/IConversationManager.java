@@ -13,7 +13,7 @@ public interface IConversationManager
 
 	IMessage putMessage(int user_id, int chat_id, String message_text) throws ManagerException;
 
-	void markReaden(int user_id, int chat_id, int message_id) throws ManagerException;
+	void toggleMessageFlag(int user_id, int chat_id, int message_id, int flag, boolean remove) throws ManagerException;
 	
 	void addRemoveUser(int user_id, int chat_id, boolean remove, int target_user_id) throws ManagerException;
 

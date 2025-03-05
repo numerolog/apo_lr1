@@ -9,6 +9,4 @@ public interface IMessage
 
 	int getId();
 
-	//int getMessageId();
-
 }

@@ -2,18 +2,16 @@ package apo.managers.conversation.impl.dto;
 
 import com.google.gson.annotations.Expose;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
-import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 
+// реакция или флаг о прочтении
 @Entity
-public class MessageReadenBy 
+public class MessageFlag 
 {
 
     @Expose
@@ -28,23 +26,35 @@ public class MessageReadenBy
     @Expose
     @Column(nullable = false)
 	public int user_id;
+
+    // 0 - сообщение прочитано, все остальное - код емодзи
+    public static final int READEN_FLAG = 0;
     
-    public MessageReadenBy() 
+    @Expose
+    @Column(nullable = false)
+	public int flag = READEN_FLAG;
+    
+    @Column(nullable = false)
+    public LocalDateTime timestamp = LocalDateTime.now();
+    
+    public MessageFlag() 
     {
-    	
+    	;
     }
     
-	public MessageReadenBy(int user_id) 
+	public MessageFlag(int user_id) 
 	{
 		super();
 		this.user_id = user_id;
 	}
 
-	public int getId() {
+	public int getId() 
+	{
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(int id) 
+	{
 		this.id = id;
 	}
 

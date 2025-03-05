@@ -38,5 +38,11 @@ public class EventManagerImpl implements IEventManager
 //			}
 //		});
 	}
+
+	@Override
+	public void noticeAddRemoveMessageFlag(int user_id, int chat_id, int message_id, int flag, boolean remove) 
+	{
+		// TODO: impl NAMF
+	}
 	
 }

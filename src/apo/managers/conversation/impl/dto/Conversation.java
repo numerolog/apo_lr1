@@ -39,38 +39,49 @@ public class Conversation implements IConversation
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Message> messages = new ArrayList<>();
     
-    public Conversation() {}   
+    public Conversation() 
+    {
+    	;
+    }   
 	
-	public int getId() {
+	public int getId() 
+	{
 		return id;
 	}
 
-	public void setId(int id) {
+	public void setId(int id) 
+	{
 		this.id = id;
 	}
 
-	public int getOwner_user_id() {
+	public int getOwner_user_id() 
+	{
 		return owner_user_id;
 	}
 
-	public void setOwner_user_id(int owner_user_id) {
+	public void setOwner_user_id(int owner_user_id) 
+	{
 		this.owner_user_id = owner_user_id;
 	}
 
-	public Set<ConversationMember> getMembers() {
+	public Set<ConversationMember> getMembers() 
+	{
 		return members;
 	}
 
-	public void setMembers(Set<ConversationMember> members) {
+	public void setMembers(Set<ConversationMember> members) 
+	{
 		this.members = members;
 	}
 
-	public Collection<Message> getMessages() {
+	public Collection<Message> getMessages() 
+	{
 		return messages;
 	}
 
 	@Override
-	public Object getScopeData(int scope_id) {
+	public Object getScopeData(int scope_id) 
+	{
 		return this;
 	}
 
