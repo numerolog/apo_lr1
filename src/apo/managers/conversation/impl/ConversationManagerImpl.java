@@ -12,6 +12,8 @@ import apo.managers.conversation.IMessage;
 import apo.managers.conversation.impl.dto.Conversation;
 import apo.managers.conversation.impl.dto.ConversationMember;
 import apo.managers.conversation.impl.dto.ConversationRepository;
+import apo.managers.conversation.impl.dto.Message;
+import apo.managers.conversation.impl.dto.MessageRepository;
 import apo.managers.event.IEventManager;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
@@ -77,6 +79,9 @@ public class ConversationManagerImpl implements IConversationManager
 	@Autowired
 	private ConversationRepository conversation_repository;
 	
+	@Autowired
+	private MessageRepository message_repository;
+	
 	private Conversation getOrLoad(int chat_id) 
 	{
 		if (!conversation_repository.existsById(chat_id))
@@ -92,21 +97,35 @@ public class ConversationManagerImpl implements IConversationManager
 	@Override
 	public Collection<IConversation> getList(int user_id) 
 	{
-		
-		
-		return null;
+		return (Collection<IConversation>)(Object)conversation_repository.findJoined(user_id);
 	}
 
 	@Override
-	public Collection<IMessage> getList(int user_id, int chat_id, int offset_from, int offset_size) 
+	public Collection<IMessage> getList(int user_id, int chat_id, int offset_from, int offset_size) throws ManagerException 
 	{
-		return null;
+		if (!getList(user_id).stream().filter(c -> c.getId() == chat_id).findAny().isPresent())
+			throw new ManagerException("user not in conversation");
+
+		return (Collection<IMessage>)(Object)message_repository.find(chat_id, offset_from, offset_size);
 	}
 
 	@Override
-	public IMessage putMessage(int user_id, int chat_id, String message_text) 
+	@Transactional
+	public IMessage putMessage(int user_id, int chat_id, String message_text) throws ManagerException 
 	{
-		return null;
+		if (!getList(user_id).stream().filter(c -> c.getId() == chat_id).findAny().isPresent())
+			throw new ManagerException("user not in conversation");
+
+		var conv = getOrLoad(chat_id);
+		var msg = new Message();
+		msg.setConversation(conv);
+		msg.setText(message_text);
+		msg.setAuthor_id(user_id);
+		
+		conv.getMessages().add(msg);
+		//commit(msg);
+		
+		return msg;
 	}
 
     @Autowired
@@ -142,6 +161,7 @@ public class ConversationManagerImpl implements IConversationManager
 		{
 			var member = new ConversationMember(target_user_id);
 			conv.getMembers().add(member);
+			member.conversation = conv;
 		}
 				
 		commit(conv);

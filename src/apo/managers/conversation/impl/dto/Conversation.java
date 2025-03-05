@@ -1,19 +1,24 @@
 package apo.managers.conversation.impl.dto;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import apo.managers.conversation.IConversation;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 
 @Entity
-public class Conversation implements IConversation {
+public class Conversation implements IConversation 
+{
 	
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,9 +26,11 @@ public class Conversation implements IConversation {
     @Column(nullable = false)
 	public int owner_user_id;
 
-    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<ConversationMember> members = new HashSet<>();
-    
+
+    @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<Message> messages = new ArrayList<>();
     
     public Conversation() {}   
 	
@@ -57,12 +64,10 @@ public class Conversation implements IConversation {
 		return null;
 	}
 
-//	public void setMember(ConversationMember member) {
-//		member.conversation = this;
-//		members.add(member);
-//	}
-//    
-// 
+	public Collection<Message> getMessages() {
+		return messages;
+	}
+
 }
 
 

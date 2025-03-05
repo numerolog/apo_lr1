@@ -25,12 +25,13 @@
             font-size: 16px;
         }
         #send-btn {
-            width: 15%;
+            width: 150px;
             height: 30px;
             background-color: #4CAF50;
             color: #fff;
             border: none;
             cursor: pointer;
+            margin: 1px;
         }
     </style>
 
@@ -232,6 +233,12 @@
 
             <input id="_command_convs" type="text" value=">>CNVS<<">
             <button id="send-btn" onclick="sendMsg('_command_convs')">Load conversations</button><br>
+
+            <input id="_command_load" type="text" value=">>CHAT10;0;100<<">
+            <button id="send-btn" onclick="sendMsg('_command_load')">Load conversation</button><br>
+
+            <input id="_comand_send" type="text" value=">>SEND10;SGVsbG8gd29ybGQh<<">
+            <button id="send-btn" onclick="sendMsg('_comand_send')">Send message</button><br>
 
             <input id="_command_create_conv" type="text" value=">>MAKE<<">
             <button id="send-btn" onclick="sendMsg('_command_create_conv')">Create conversation</button><br>
