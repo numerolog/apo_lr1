@@ -1,13 +1,16 @@
 package apo;
 
+import javax.sql.DataSource;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-import apo.server.WebSocketConfig;
 
 @SpringBootApplication
-public class LrApplication {
+public class LrApplication 
+{
 
 	/**
 	 * таблицы:
@@ -17,16 +20,14 @@ public class LrApplication {
 	 *  прочтений сообщений
 	 *  закрепленных сообщений / прав участников чатов / пользователей?
 	 */
-    /*@Bean
-    public WebSocketConfig webSocketConfig() {
-        return new WebSocketConfig();
-    }*/
     
-	public static void main(String[] args) {
+	public static void main(String[] args) 
+	{
 //		System.setProperty("debug", "true");
 		SpringApplication app = new SpringApplication(LrApplication.class);
 		app.run(args);
 	}
 
+	
 }
 

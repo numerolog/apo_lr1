@@ -227,11 +227,14 @@
             <input id="myMessage" type="text" placeholder="Type a message...">
             <button id="send-btn" onclick="sendMsg('myMessage')">Send</button><br>
 
-            <input id="_command_auth" type="text" value=">>AUTHuser;password<<">
+            <input id="_command_auth" type="text" value=">>AUTHtest;password<<">
             <button id="send-btn" onclick="sendMsg('_command_auth')">Auth</button><br>
 
             <input id="_command_convs" type="text" value=">>CNVS<<">
             <button id="send-btn" onclick="sendMsg('_command_convs')">Load conversations</button><br>
+
+            <input id="_command_create_conv" type="text" value=">>MAKE<<">
+            <button id="send-btn" onclick="sendMsg('_command_create_conv')">Create conversation</button><br>
 
             <input id="_command_exit" type="text" value=">>EXIT<<">
             <button id="send-btn" onclick="sendMsg('_command_exit')">Logout</button><br>

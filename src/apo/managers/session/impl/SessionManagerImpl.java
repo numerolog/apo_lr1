@@ -4,11 +4,15 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import apo.managers.ManagerException;
 import apo.managers.session.ISessionManager;
 import apo.managers.session.IUserSession;
+import apo.managers.session.impl.dto.User;
+import apo.managers.session.impl.dto.UserRepository;
+import jakarta.annotation.PostConstruct;
 
 @Component
 public class SessionManagerImpl implements ISessionManager
@@ -44,19 +48,28 @@ public class SessionManagerImpl implements ISessionManager
 		}
 		
 	}
+
+	@Autowired
+	private UserRepository user_repository;
 	
 	Map<String, SessionImpl> sessions = new ConcurrentHashMap<>();
 	
 	@Override
 	public IUserSession auth(String ip, String login, String password) throws ManagerException 
 	{
+		User user = user_repository.findByLogin(login);
+		if (user == null)
+			throw new ManagerException("user not found");
+		if (!user.getPassword().equals(password))
+			throw new ManagerException("incorrect password");
+		
 		SessionImpl r = new SessionImpl();
 
 		r.ip = ip;
 		r.token = UUID.randomUUID().toString();
 		
 		r.valid = true;
-		r.user_id = 1;
+		r.user_id = user.getId();
 		
 		sessions.put(r.token, r);
 		return r;
@@ -86,5 +99,18 @@ public class SessionManagerImpl implements ISessionManager
 	{
 		((SessionImpl) session).invalidate();
 	}
-
+	
+	@PostConstruct
+	void postInit()
+	{
+		var found = user_repository.findByLogin("test");
+		if (found == null)
+		{
+			found = new User();
+			found.setLogin("test");
+			found.setPassword("password");
+			user_repository.save(found);
+		}
+	}
+	
 }

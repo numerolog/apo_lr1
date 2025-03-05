@@ -4,5 +4,6 @@
 bin/*
 lib0/*
 workdir/*
+data/data/*
 
 

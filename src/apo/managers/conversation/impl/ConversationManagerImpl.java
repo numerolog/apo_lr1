@@ -1,11 +1,6 @@
 package apo.managers.conversation.impl;
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,14 +9,17 @@ import apo.managers.ManagerException;
 import apo.managers.conversation.IConversation;
 import apo.managers.conversation.IConversationManager;
 import apo.managers.conversation.IMessage;
-import apo.managers.conversation.impl.ConversationManagerImpl.ConversationImpl.DataOf_SYSTEM;
+import apo.managers.conversation.impl.dto.Conversation;
+import apo.managers.conversation.impl.dto.ConversationMember;
+import apo.managers.conversation.impl.dto.ConversationRepository;
 import apo.managers.event.IEventManager;
 import jakarta.annotation.PostConstruct;
+import jakarta.transaction.Transactional;
 
 @Component
 public class ConversationManagerImpl implements IConversationManager
 {
-
+/*
 	static class ConversationImpl implements IConversation
 	{
 		DataOf_SYSTEM data;
@@ -72,17 +70,23 @@ public class ConversationManagerImpl implements IConversationManager
 			return data.owner_user_id;
 		}
 		
-	}
+	}*/
 	
-	Map<Integer, ConversationImpl> conversations = new ConcurrentHashMap<>();
-	private ConversationImpl getOrLoad(int chat_id) 
+	//Map<Integer, Conversation> conversations = new ConcurrentHashMap<>();
+	
+	@Autowired
+	private ConversationRepository conversation_repository;
+	
+	private Conversation getOrLoad(int chat_id) 
 	{
-		return conversations.get(chat_id);
+		if (!conversation_repository.existsById(chat_id))
+			return null;
+		return conversation_repository.findByIdEquals(chat_id);// conversations.get(chat_id);
 	}
 
-	private void commit(ConversationImpl conv) 
+	private Conversation commit(Conversation conv) 
 	{
-		
+		return conversation_repository.save(conv);
 	}
 	
 	@Override
@@ -111,13 +115,13 @@ public class ConversationManagerImpl implements IConversationManager
 	@Override
 	public void addRemoveUser(int user_id, int chat_id, boolean remove, int target_user_id) throws ManagerException 
 	{
-		ConversationImpl conv = getOrLoad(chat_id);
+		Conversation conv = getOrLoad(chat_id);
 		if (conv == null)
 			throw new ManagerException("failed to get conversation");
-		
+
 		boolean removeSelf = user_id == target_user_id && remove;
 		
-		if (conv.getOwnerUserId() != user_id)
+		if (conv.getOwner_user_id() != user_id)
 		{
 			if (removeSelf)
 			{
@@ -132,11 +136,12 @@ public class ConversationManagerImpl implements IConversationManager
 		// TODO: не потокобезопасно
 		if (remove)
 		{
-			conv.data.members.remove(target_user_id);
+			conv.getMembers().removeIf(member -> member.getUser_id() == target_user_id);
 		}
 		else
 		{
-			conv.data.members.add(target_user_id);
+			var member = new ConversationMember(target_user_id);
+			conv.getMembers().add(member);
 		}
 				
 		commit(conv);
@@ -144,19 +149,16 @@ public class ConversationManagerImpl implements IConversationManager
 		event_manager.noticeAddRemoveConversation(target_user_id, chat_id, target_user_id, removeSelf);
 	}
 	
-	AtomicInteger id_counter = new AtomicInteger();
 	
 	@Override
+	@Transactional
 	public IConversation create(int user_id) throws ManagerException 
 	{
-		ConversationImpl conv = new ConversationImpl();
+		Conversation conv = new Conversation();
 		
-		conv.data = new DataOf_SYSTEM();
-		conv.data.id = id_counter.incrementAndGet();
-		conv.data.owner_user_id = user_id;
-		
-		conversations.put(conv.data.id, conv);
-		commit(conv);
+		conv.owner_user_id = user_id;
+
+		conv = commit(conv);
 		
 		// Добавляем самих себя
 		addRemoveUser(user_id, conv.getId(), false, user_id);
@@ -167,12 +169,13 @@ public class ConversationManagerImpl implements IConversationManager
 	@PostConstruct
 	void postInit()
 	{
-		try {
-			create(1);
-		} catch (ManagerException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		try {
+//			if (getOrLoad(1) == null)
+//				create(1);
+//		} catch (ManagerException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		
 	}
 
