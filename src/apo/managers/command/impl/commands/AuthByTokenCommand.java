@@ -12,7 +12,7 @@ import apo.managers.session.IUserSession;
 import apo.server.ServerHandler.ConnectionContext;
 
 @Component
-public class AuthCommand implements ICommandHandler
+public class AuthByTokenCommand implements ICommandHandler
 {
 
 	@Autowired
@@ -27,25 +27,25 @@ public class AuthCommand implements ICommandHandler
 	@Override
 	public String getType() 
 	{
-		return "AUTH";
+		return "BACK";
 	}
 
 	@Override
 	public List<Object> handle(ConnectionContext ctx, String type, String... args) throws Throwable 
 	{
-		if (args.length < 2)
+		if (ctx.session != null)
+			return formError("Already authed");
+		if (args.length < 1)
     		return formError("No args");
 		
-		String login = args[0];
-		String password = args[1];
+		String token = args[0];
 		
 		try 
 		{
-			IUserSession session = session_manager.auth(ctx.connection.getIp(), login, password);
+			IUserSession session = session_manager.auth(ctx.connection.getIp(), token);
 			Asserts.notNull(session, "session");
 			ctx.session = session;
-			//TODO: тут надо бы отдавать токен
-			return List.of(type, "OK");
+			return List.of(type, session.getToken());
 		} catch (Exception ex)
 		{
 			ex.printStackTrace();

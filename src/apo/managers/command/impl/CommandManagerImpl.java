@@ -12,7 +12,8 @@ import org.springframework.stereotype.Component;
 import apo.managers.command.ICommandHandler;
 import apo.managers.command.ICommandManager;
 import apo.managers.command.impl.commands.AddRemoveUserToConversationCommand;
-import apo.managers.command.impl.commands.AuthCommand;
+import apo.managers.command.impl.commands.AuthByCredentialsCommand;
+import apo.managers.command.impl.commands.AuthByTokenCommand;
 import apo.managers.command.impl.commands.ExitCommand;
 import apo.managers.command.impl.commands.LoadConversationCommand;
 import apo.managers.command.impl.commands.LoadConversationsCommand;
@@ -46,7 +47,8 @@ public class CommandManagerImpl implements ICommandManager
 		//TODO: глянуть в DI уже наверное есть такое, лел
 		for(Class<? extends ICommandHandler> clz : new Class[]{
 				ExitCommand.class,
-				AuthCommand.class,
+				AuthByCredentialsCommand.class,
+				AuthByTokenCommand.class,
 				LoadConversationsCommand.class,
 				MakeConversationCommand.class,
 				LoadConversationCommand.class,

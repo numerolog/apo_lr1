@@ -118,12 +118,12 @@ public class ServerHandler extends TextWebSocketHandler
     public void afterConnectionClosed(WebSocketSession s, CloseStatus status) throws Exception 
 	{
     	ConnectionContext ctx = connections.getOrDefault(s, null);
-    	try {
-			command_manager.handle(ctx, ICommandManager.EXIT_COMMAND_TYPE);
+    	/*try {
+			command_manager.handle(ctx, ICommandManager.FREE_COMMAND_TYPE);
 		} catch (Throwable e) 
     	{
 			e.printStackTrace();
-		}
+		}*/
     	connections.remove(s);
         System.out.println("Connection closed");
     }

@@ -5,4 +5,6 @@ public interface IUserSession
 
 	Integer getUserId();
 
+	String getToken();
+
 }
