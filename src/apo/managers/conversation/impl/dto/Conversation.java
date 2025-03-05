@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.google.gson.annotations.Expose;
+
 import apo.managers.conversation.IConversation;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -19,16 +21,21 @@ import jakarta.persistence.OneToMany;
 @Entity
 public class Conversation implements IConversation 
 {
-	
+
+    @Expose
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+
+    @Expose
     @Column(nullable = false)
 	public int owner_user_id;
 
+    @Expose(serialize=false, deserialize=false)
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<ConversationMember> members = new HashSet<>();
 
+    @Expose(serialize=false, deserialize=false)
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Message> messages = new ArrayList<>();
     
@@ -58,14 +65,13 @@ public class Conversation implements IConversation
 		this.members = members;
 	}
 
-	@Override
-	public Object getScopeData(int scope_id) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 	public Collection<Message> getMessages() {
 		return messages;
+	}
+
+	@Override
+	public Object getScopeData(int scope_id) {
+		return this;
 	}
 
 }

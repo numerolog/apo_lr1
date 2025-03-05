@@ -13,7 +13,7 @@ import com.google.gson.stream.JsonReader;
 
 public class GSONUtils {
 
-	public static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+	public static final Gson GSON = new GsonBuilder().excludeFieldsWithoutExposeAnnotation().setPrettyPrinting().create();
 
 	static String configFolderName = "workdir";
 	public static boolean exists(File root, String _path) throws IOException {

@@ -1,5 +1,7 @@
 package apo.managers.conversation.impl.dto;
 
+import com.google.gson.annotations.Expose;
+
 import apo.managers.conversation.IMessage;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -10,26 +12,26 @@ import jakarta.persistence.ManyToOne;
 @Entity
 public class Message implements IMessage
 {
+    @Expose
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
-    
+
+    @Expose(serialize=false, deserialize=false)
     @ManyToOne
     private Conversation conversation;
 
+    @Expose
     private int author_id;
+    @Expose
     private String text;
     
     public Message() {}	
-    
-	@Override
-	public Object getScopeData(int scope_id) {
-		// TODO Auto-generated method stub
-		return null;
+    	
+	public int getId() {
+		return id;
 	}
 
-	
-	
 	public int getAuthor_id() {
 		return author_id;
 	}
@@ -50,6 +52,9 @@ public class Message implements IMessage
 		this.conversation = conversation;
 	}
 
-	
+	@Override
+	public Object getScopeData(int scope_id) {
+		return this;
+	}
 	
 }

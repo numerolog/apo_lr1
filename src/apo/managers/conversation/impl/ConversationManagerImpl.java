@@ -21,67 +21,16 @@ import jakarta.transaction.Transactional;
 @Component
 public class ConversationManagerImpl implements IConversationManager
 {
-/*
-	static class ConversationImpl implements IConversation
-	{
-		DataOf_SYSTEM data;
-		
-		static class DataOf_USER
-		{
-			public int id;
-			public int owner_user_id;
-			public Set<Integer> members = new HashSet<>();
-			
-			public DataOf_USER() 
-			{
-				;
-			}
-			
-			public DataOf_USER(ConversationImpl conversationImpl) 
-			{
-				this.id = conversationImpl.getId();
-				this.owner_user_id = conversationImpl.getOwnerUserId();
-			}
-			
-		}
-		
-		static class DataOf_SYSTEM extends DataOf_USER
-		{
-			;
-		}
-
-		@Override
-		public Object getScopeData(int scope_id) 
-		{
-			switch (scope_id)
-			{
-				case SCOPE_USER:
-					return new DataOf_USER(this);
-			}
-			return null;
-		}
-
-		@Override
-		public int getId() 
-		{
-			return data.id;
-		}
-		
-		public int getOwnerUserId() 
-		{
-			return data.owner_user_id;
-		}
-		
-	}*/
-	
-	//Map<Integer, Conversation> conversations = new ConcurrentHashMap<>();
 	
 	@Autowired
 	private ConversationRepository conversation_repository;
 	
 	@Autowired
 	private MessageRepository message_repository;
-	
+
+    @Autowired
+    private IEventManager event_manager;
+    
 	private Conversation getOrLoad(int chat_id) 
 	{
 		if (!conversation_repository.existsById(chat_id))
@@ -123,13 +72,10 @@ public class ConversationManagerImpl implements IConversationManager
 		msg.setAuthor_id(user_id);
 		
 		conv.getMessages().add(msg);
-		//commit(msg);
 		
+		event_manager.noticeNewMessage(user_id, chat_id, msg.getId());
 		return msg;
 	}
-
-    @Autowired
-    private IEventManager event_manager;
         
 	@Override
 	public void addRemoveUser(int user_id, int chat_id, boolean remove, int target_user_id) throws ManagerException 

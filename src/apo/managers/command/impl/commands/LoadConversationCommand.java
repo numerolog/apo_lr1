@@ -73,7 +73,7 @@ public class LoadConversationCommand implements ICommandHandler
 			resp.add(offset_size);
 			
 			for (var message : messages)
-				resp.add(Utils.base64encode(GSONUtils.objectToString(((IMessage) message).getScopeData(IMessage.SCOPE_USER))));
+				resp.add(Utils.base64encode(GSONUtils.objectToString(message.getScopeData(IMessage.SCOPE_USER))));
 			
 			return resp;
 		} catch (Exception ex)

@@ -46,7 +46,7 @@ public class SendMessageCommand implements ICommandHandler
 		{
 			IMessage message = conversation_manager.putMessage(ctx.session.getUserId(), chat_id, message_text);
 	
-			return List.of(type, Utils.base64encode(GSONUtils.objectToString(((IConversation) message).getScopeData(IMessage.SCOPE_USER))));
+			return List.of(type, Utils.base64encode(GSONUtils.objectToString(((IMessage) message).getScopeData(IMessage.SCOPE_USER))));
 		} catch (Exception ex)
 		{
 			ex.printStackTrace();
