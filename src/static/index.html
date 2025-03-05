@@ -168,7 +168,8 @@
                 // Проверяем, соответствует ли строка формату >>TYPExxxxxx<<
                 const type = data.substring(2, 6); // Получаем TYPE (4 символа)
                 data = data.substring(startIndex+startDelimiter.length+4, endIndex);
-
+                
+                addMessage(data, false);
                 console.log(data);
                 
                 // Обновляем индекс для поиска следующего совпадения
@@ -201,6 +202,8 @@
         var message = document.getElementById(elementId).value;
         console.log('send ' + message);
         myWebSocket.send(message);
+        addMessage(message, true);
+
     }
 
 
@@ -219,16 +222,19 @@
     <input type="button" onclick="closeConn()" value="Close connection" /-->
 
     <div id="chat-container">
-        <div id="chat-log"></div>
+        <div id="chat-log" style="height: 250px;overflow:scroll;"></div>
         <div id="input-container">
             <input id="myMessage" type="text" placeholder="Type a message...">
             <button id="send-btn" onclick="sendMsg('myMessage')">Send</button><br>
 
             <input id="_command_auth" type="text" value=">>AUTHuser;password<<">
-            <button id="send-btn" onclick="sendMsg('_command_auth')">Send</button><br>
+            <button id="send-btn" onclick="sendMsg('_command_auth')">Auth</button><br>
+
+            <input id="_command_convs" type="text" value=">>CNVS<<">
+            <button id="send-btn" onclick="sendMsg('_command_convs')">Load conversations</button><br>
 
             <input id="_command_exit" type="text" value=">>EXIT<<">
-            <button id="send-btn" onclick="sendMsg('_command_exit')">Send</button><br>
+            <button id="send-btn" onclick="sendMsg('_command_exit')">Logout</button><br>
 
         </div>
     </div>

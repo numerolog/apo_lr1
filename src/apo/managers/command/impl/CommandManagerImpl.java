@@ -38,14 +38,9 @@ public class CommandManagerImpl implements ICommandManager
 	void postInit()
 	{
 		System.err.println("Add commands...");
-		/*
-		new ArrayList<Class<? extends ICommandHandler>>() {
-			{
-				add(ExitCommand.class);
-			}
-		}.*/
 		//TODO: глянуть в DI уже наверное есть такое, лел
-		for(Class<? extends ICommandHandler> clz : new Class[]{
+		for (Class<? extends ICommandHandler> clz : new Class[]
+			{
 				ExitCommand.class,
 				AuthByCredentialsCommand.class,
 				AuthByTokenCommand.class,
@@ -54,14 +49,13 @@ public class CommandManagerImpl implements ICommandManager
 				LoadConversationCommand.class,
 				SendMessageCommand.class,
 				AddRemoveUserToConversationCommand.class,
-				}) {	
-			//forEach(clz -> {
+			}) 
+		{	
 				System.err.println("Add command " + clz + "...");
 				ICommandHandler handler = appContext.getBean(clz);
 				if (handler == null)
 					throw new RuntimeException();
 				handlers.put(handler.getType(), handler);
-			//});
 		}
 		System.err.println("Commands added!");
 	}

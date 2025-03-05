@@ -13,9 +13,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import apo.managers.command.ICommandManager;
 import apo.managers.command.IConnection;
-import apo.managers.event.IEventManager;
 import apo.managers.session.IUserSession;
-import jakarta.inject.Inject;
 
 @Component
 public class ServerHandler extends TextWebSocketHandler 
@@ -27,43 +25,10 @@ public class ServerHandler extends TextWebSocketHandler
 		public IUserSession session;
 	}
 	
-    private final Map<WebSocketSession, ConnectionContext> connections = new ConcurrentHashMap<>();
+	public final Map<WebSocketSession, ConnectionContext> connections = new ConcurrentHashMap<>();
 
     @Autowired
     private ICommandManager command_manager;
-    
-    class EventManagerImpl implements IEventManager
-    {
-
-		@Override
-		public void noticeNewMessage(int target_user_id, int chat_id, int message_id) 
-		{
-			connections.entrySet().stream().filter(pair -> pair.getValue().session != null && pair.getValue().session.getUserId() == target_user_id).forEach(pair -> {
-				try 
-				{
-					pair.getValue().connection.sendCommand("NNMS", chat_id, message_id);
-				} catch (IOException e) 
-				{
-					e.printStackTrace();
-				}
-			});
-		}
-
-		@Override
-		public void noticeAddRemoveConversation(int target_user_id, int chat_id, int user_id, boolean removed) 
-		{
-			connections.entrySet().stream().filter(pair -> pair.getValue().session != null && pair.getValue().session.getUserId() == target_user_id).forEach(pair -> {
-				try 
-				{
-					pair.getValue().connection.sendCommand("NACU", chat_id, user_id, (removed ? "removed" : "added"));
-				} catch (IOException e) 
-				{
-					e.printStackTrace();
-				}
-			});
-		}
-    	
-    }
     
     public static class WSConnection implements IConnection
     {

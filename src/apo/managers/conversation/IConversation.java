@@ -7,4 +7,6 @@ public interface IConversation
 
 	Object getScopeData(int scope_id);
 
+	int getId();
+
 }
