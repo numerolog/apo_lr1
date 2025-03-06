@@ -1,34 +1,44 @@
 package apo.server;
 
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.socket.config.annotation.EnableWebSocket;
-import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
-import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.messaging.handler.invocation.HandlerMethodArgumentResolver;
+import org.springframework.messaging.simp.config.MessageBrokerRegistry;
+import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
+import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
 @Configuration
-@EnableWebSocket
-public class WebSocketConfig implements WebSocketConfigurer 
+@EnableWebSocketMessageBroker
+public class WebSocketConfig implements WebSocketMessageBrokerConfigurer
 {
+	
+	@Override
+	public void registerStompEndpoints(StompEndpointRegistry registry) 
+	{
+		WebSocketMessageBrokerConfigurer.super.registerStompEndpoints(registry);
+		registry.addEndpoint("/ws").addInterceptors(new ConnectionIpInterceptor()).setAllowedOrigins("*");
+	}
+
+	@Override
+	public void configureMessageBroker(MessageBrokerRegistry registry) 
+	{
+		registry.setUserDestinationPrefix("/user");
+		registry.setApplicationDestinationPrefixes("/app");
+	}
 
 	@Autowired
-	private ServerHandler handler;
+	private ConnectionContextArgumentResolver contextResolver;
 	
-    @Override
-    public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) 
-    {
-        registry.addHandler(handler, "/ws").setAllowedOrigins("*");
-        //.addInterceptors(new WebSocketInterceptor());
-    }
+	@Override
+	public void addArgumentResolvers(List<HandlerMethodArgumentResolver> argumentResolvers) 
+	{
+		argumentResolvers.add(contextResolver);
+	}
 
-    /*
-    @Bean
-    public ServerHandler myHandler() 
-    {
-        return handler;//appContext.getBean(ServerHandler.class);// new ServerHandler();
-    }*/
 }
 
 

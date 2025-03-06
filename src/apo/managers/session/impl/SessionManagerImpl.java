@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Component;
 
 import apo.managers.ManagerException;
@@ -55,9 +56,21 @@ public class SessionManagerImpl implements ISessionManager
 	Map<String, SessionImpl> sessions = new ConcurrentHashMap<>();
 
 	@Override
-	public IUserSession register(String ip, String login, String password) 
+	public IUserSession register(String ip, String login, String password) throws ManagerException 
 	{
-		return null;
+		{
+			User user = user_repository.findByLogin(login);
+			if (user != null)
+				throw new ManagerException("user already exists");
+		}
+		
+		User user = new User();
+		user.setLogin(login);
+		user.setPassword(BCrypt.hashpw(password, BCrypt.gensalt()));
+		
+		user_repository.save(user);
+		
+		return auth(ip, login, password);
 	}
 	
 	@Override
@@ -66,7 +79,8 @@ public class SessionManagerImpl implements ISessionManager
 		User user = user_repository.findByLogin(login);
 		if (user == null)
 			throw new ManagerException("user not found");
-		if (!user.getPassword().equals(password))
+		
+		if (!BCrypt.checkpw(password, user.getPassword()))
 			throw new ManagerException("incorrect password");
 		
 		SessionImpl r = new SessionImpl();
@@ -84,6 +98,7 @@ public class SessionManagerImpl implements ISessionManager
 	@Override
 	public IUserSession auth(String ip, String token) throws ManagerException 
 	{
+		System.err.println(sessions);
 		SessionImpl r = sessions.get(token);
 		if (r == null)
 			return r;

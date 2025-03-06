@@ -20,7 +20,7 @@ import apo.managers.command.impl.commands.LoadConversationsCommand;
 import apo.managers.command.impl.commands.MakeConversationCommand;
 import apo.managers.command.impl.commands.SendMessageCommand;
 import apo.managers.session.ISessionManager;
-import apo.server.ServerHandler.ConnectionContext;
+import apo.server.ConnectionContext;
 import jakarta.annotation.PostConstruct;
 
 @Component

@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 import apo.managers.command.ICommandHandler;
 import apo.managers.command.ICommandManager;
 import apo.managers.session.ISessionManager;
-import apo.server.ServerHandler.ConnectionContext;
+import apo.server.ConnectionContext;
 
 @Component
 public class ExitCommand implements ICommandHandler

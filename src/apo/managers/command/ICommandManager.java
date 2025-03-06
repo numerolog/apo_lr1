@@ -2,7 +2,7 @@ package apo.managers.command;
 
 import java.util.List;
 
-import apo.server.ServerHandler.ConnectionContext;
+import apo.server.ConnectionContext;
 
 public interface ICommandManager extends ICommandHandler
 {

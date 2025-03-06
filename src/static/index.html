@@ -33,195 +33,71 @@
             cursor: pointer;
             margin: 1px;
         }
+
+        #loginFormContainer {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1;
+        }
+
+        #loginForm {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background-color: #f9f9f9;
+            z-index: 2;
+        }
+
+        #loginForm form {
+            max-width: 300px;
+            margin: auto;
+        }
+
+        #loginForm label {
+            margin-bottom: 5px;
+        }
+
+        #loginForm input {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #loginForm button[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #loginForm button[type="submit"]:hover {
+            background-color: #0069d9;
+        }
+
+
     </style>
-
-    <script type="text/javascript">
-
-    var myWebSocket;
-
-    const WSB_MESSAGE_MAGIC = 0x5742;
-    const WSB_SCOPE_OPTIONS = 1;
-    const WSB_TYPE_OPTIONS_DONTSENDBROADCASTS = 1;
-    const WSB_SCOPE_RESPONSE = 127;
-
-    const WSB_SCOPE_TELEMETRY = 2;
-    const WSB_TELEMETRY_TEMP = 1;
-    const WSB_TELEMETRY_CPUS = 2;
-    const WSB_TELEMETRY_RAMS = 3;
-
-    const WSB_SCOPE_CAMERA_0 = 3;
-    const WSB_CAM0_STREAMCHUNK = 1;
-    const WSB_CAM0_OBJECT = 3;
-
-    // Функция для парсинга текста
-    async function parsePacket(data) {
-        //const bb = await data.bytes();
-        var bb = await data.arrayBuffer();
-        // Протокол отправляется в LE (надо везде видимо писать true)
-        //const dataView = new DataView(bb.buffer, bb.byteOffset, bb.byteLength);
-        const dataView = new DataView(bb);
-        const magic = dataView.getUint16(0, true);
-        if (magic !== WSB_MESSAGE_MAGIC)
-        {
-            console.error('bad magic, expected: ' + WSB_MESSAGE_MAGIC + ', received: ' + magic);
-            return;
-        }
-        //const uint8array = Uint8Array.from(text, c=>c.charCodeAt(0));
-        // console.log(dataView);
-        const scope = dataView.getUint8(2);
-        const type  = dataView.getUint8(3);
-       // console.log('received packet scope=' + scope + ', type=' + type);
-        if (scope === WSB_SCOPE_TELEMETRY)
-        {
-            switch (type)
-            {
-                case WSB_TELEMETRY_TEMP:
-                    parseTemp(dataView.getFloat32(4, true));
-                break;
-                case WSB_TELEMETRY_CPUS:
-                    parseCpu(dataView.getFloat32(4, true));
-                break;
-                case WSB_TELEMETRY_RAMS:
-                    parseRam(dataView.getFloat32(4, true));
-                break;
-            }
-        }
-        else if (scope === WSB_SCOPE_CAMERA_0)
-        {
-            switch (type)
-            {
-                case WSB_CAM0_STREAMCHUNK:
-                    parseCam0StreamChunk(new Uint8Array(bb).slice(4));//.slice(3, -1));
-                break;
-                case WSB_CAM0_OBJECT:
-                    parseCam0Object(dataView.getInt32(4*1, true), dataView.getInt32(4*2, true), dataView.getInt32(4*3, true), dataView.getInt32(4*4, true), dataView.getInt32(4*5, true), dataView.getInt32(4*6, true), dataView.getInt32(4*7, true), dataView.getInt32(4*8, true));
-                break;
-            }
-        }
-
-
-        /*
-        const startDelimiter = '>>';
-        const endDelimiter = '<<';
-        let startIndex = 0;
-
-        while (true) {
-            // Находим индекс начала следующего совпадения
-            startIndex = text.indexOf(startDelimiter, startIndex);
-            if (startIndex === -1) break; // Если не найдено, выходим из цикла
-
-            // Находим индекс конца совпадения
-            const endIndex = text.indexOf(endDelimiter, startIndex);
-            if (endIndex === -1) break; // Если не найдено, выходим из цикла
-
-            // Извлекаем строку между разделителями
-            var data = text.substring(startIndex, endIndex + endDelimiter.length);
-        
-            
-            // Проверяем, соответствует ли строка формату >>TYPExxxxxx<<
-            const type = data.substring(2, 6); // Получаем TYPE (4 символа)
-            data = data.substring(startIndex+startDelimiter.length+4, endIndex);
-
-            if (type === 'TEMP')
-                parseTemp(data);
-            if (type === 'CPUS')
-                parseCpu(data);
-
-            
-            // Обновляем индекс для поиска следующего совпадения
-            startIndex = endIndex + endDelimiter.length;
-        }*/
-    }
-
-
-    function connectToWS() {
-        console.log("try to connect... ");
-        if (myWebSocket !== undefined) 
-        {
-            myWebSocket.close()
-        }
-
-        myWebSocket = new WebSocket('ws://127.0.0.1:8080/ws');
-        var timeout = setTimeout(()=>{
-            if (myWebSocket !== undefined)
-                myWebSocket.close();
-            myWebSocket = undefined;
-        }, 3000);
-        myWebSocket.onmessage = function(event) {
-            var text = event.data.toString();
-            const startDelimiter = '>>';
-            const endDelimiter = '<<';
-            let startIndex = 0;
-
-            while (true) {
-                // Находим индекс начала следующего совпадения
-                startIndex = text.indexOf(startDelimiter, startIndex);
-                if (startIndex === -1) break; // Если не найдено, выходим из цикла
-
-                // Находим индекс конца совпадения
-                const endIndex = text.indexOf(endDelimiter, startIndex);
-                if (endIndex === -1) break; // Если не найдено, выходим из цикла
-
-                // Извлекаем строку между разделителями
-                var data = text.substring(startIndex, endIndex + endDelimiter.length);
-            
-                
-                // Проверяем, соответствует ли строка формату >>TYPExxxxxx<<
-                const type = data.substring(2, 6); // Получаем TYPE (4 символа)
-                data = data.substring(startIndex+startDelimiter.length+4, endIndex);
-                
-                addMessage(data, false);
-                console.log(data);
-                
-                // Обновляем индекс для поиска следующего совпадения
-                startIndex = endIndex + endDelimiter.length;
-            }
-        }
-
-        myWebSocket.onopen = function(evt) {
-            console.log("onopen.");
-            clearTimeout(timeout);
-        };
-
-        myWebSocket.onclose = function(evt) {
-            console.log("onclose.");
-            myWebSocket = undefined;
-            setTimeout(function() {
-              connectToWS();
-            }, 3000);
-        };
-
-        myWebSocket.onerror = function(evt) {
-            console.log("Error!");/*
-            setTimeout(function() {
-              connectToWS();
-            }, 3000);*/
-        };
-    }
-
-    function sendMsg(elementId) {
-        var message = document.getElementById(elementId).value;
-        console.log('send ' + message);
-        myWebSocket.send(message);
-        addMessage(message, true);
-
-    }
-
-
-/*
-    function closeConn() {
-        myWebSocket.close();
-    }*/
-// awk '/\/.*\// {print $NF}' /proc/254/maps | sort -u | xargs -r du -h
-    </script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@stomp/stompjs@7.0.0-beta2/bundles/stomp.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-
-    
-
-    <!--input type="button" onclick="connectToWS()" value="connect to WebSocket endpoint" /><br><br>
-    <input type="button" onclick="closeConn()" value="Close connection" /-->
-
     <div id="chat-container">
         <div id="chat-log" style="height: 250px;overflow:scroll;"></div>
         <div id="input-container">
@@ -246,6 +122,21 @@
             <input id="_command_exit" type="text" value=">>EXIT<<">
             <button id="send-btn" onclick="sendMsg('_command_exit')">Logout</button><br>
 
+        </div>
+    </div>
+
+    <div id="loginFormContainer" style="display: none;">
+        <div id="loginForm">
+            <div class="mb-3">
+                <label for="exampleInputEmail1" class="form-label">Логин</label>
+                <input type="text" class="form-control" id="loginFormLogin" aria-describedby="loginHelp" value="test2">
+                <!--div id="loginHelp" class="form-text">Введите ваш логин.</div-->
+            </div>
+            <div class="mb-3">
+                <label for="exampleInputPassword1" class="form-label">Пароль</label>
+                <input type="password" class="form-control" id="loginFormPasword" value="te-">
+            </div>
+            <button id="loginFormButton" class="btn btn-primary">Войти</button>
         </div>
     </div>
 
@@ -299,7 +190,244 @@
 
     <script>
 
-        connectToWS();
+
+        const client = new StompJs.Client({
+          brokerURL: 'ws://127.0.0.1:8080/ws',
+          connectHeaders: {},
+          debug: function (str) 
+            {
+            console.log(str);
+          },
+          reconnectDelay: 5000,
+          heartbeatIncoming: 4000,
+          heartbeatOutgoing: 4000,
+        });
+
+        //addMessage(clientId, false);
+        function toast(clz, message)
+        {
+            Toastify({
+              text: message,
+              className: clz,
+            }).showToast();
+        }
+
+        function request(path, bodySrc, onOk, onError)
+        {
+            var body = Object.assign({}, bodySrc);
+            var request_id = parseInt(Math.random()*100000000000) + '';
+            // request_id отправляется в body для получения в body-ответа, и в headers, для обработчика в спринге(мне лень мучаться с пробросом BaseRequest в GlobalExceptionHandler)
+            body['request_id'] = request_id;
+
+            if (!client.__requests)
+                client.__requests = {};
+
+            if (!client.__registeredPaths)
+                client.__registeredPaths = {};
+
+            if (!client.__hasErrorHandler)
+                client.__hasErrorHandler = 'no';
+
+            client.__requests[request_id] = [onOk, onError];
+
+            var fullPath = '/app' + path;
+            if (!(fullPath in client.__registeredPaths))
+            {
+                client.subscribe('/user' + path, (frame) => 
+                {
+                    var bodyParsed = undefined;
+                    try
+                    {
+                        bodyParsed = JSON.parse(frame.body);
+                    } catch (e) 
+                    {
+                        toast('fail', 'Unknown data received at data handler for path=' + path);
+                        return;
+                    }
+
+                    if (!bodyParsed.request_id)
+                    {
+                        toast('fail', 'Received data with unknown request id for path=' + path);
+                        return;
+                    }
+                    client.__requests[bodyParsed.request_id][0](bodyParsed);
+                });
+
+                client.__registeredPaths[fullPath] = 'yes';
+            }
+
+            if (client.__hasErrorHandler == 'no')
+            {
+                client.subscribe('/user/error', (frame) =>
+                {
+                    var bodyParsed = undefined;
+                    try
+                    {
+                        bodyParsed = JSON.parse(frame.body);
+                    } catch (e) 
+                    {
+                        toast('fail', 'Unknown data received at error handler');
+                        return;
+                    }
+
+                    if (!bodyParsed.request_id)
+                    {
+                        toast('fail', 'Received error with unknown request id');
+                        return;
+                    }
+
+                    client.__requests[bodyParsed.request_id][1](bodyParsed);
+                });
+                client.__hasErrorHandler = 'yes';
+            }
+
+            client.publish({destination: fullPath, headers: {'request_id': request_id}, body: JSON.stringify(body)}); 
+        }
+
+        function processEvent(type, args)
+        {
+            switch (type)
+            {
+                case 'connected':
+                {
+                    var token = localStorage.getItem('token');
+                    if (token)
+                    {
+                        console.log('has token'+token+', try back in');
+                        request('/uctl/back', {'token': token}, 
+                            (response) => 
+                            {
+                                pushEvent('logged');
+                            }, 
+                            (error) =>
+                            {
+                                pushEvent('login_by_token_failed');
+                            });
+                    }
+                    else
+                    {
+                        console.log('no token, display auth form...');
+                        pushEvent('login_required');
+                    }
+                } break;
+                case 'login':
+                {
+                    request('/uctl/login', args, 
+                        (response) => 
+                        {
+                            localStorage.setItem('token', response.token);
+                            pushEvent('logged');
+                        }, 
+                        (error) =>
+                        {
+                            pushEvent('login_by_credentials_failed');
+                        });
+                }
+                break;
+                case 'logged':
+                {
+                    // request conversations...
+                    toast('ok', 'Вход выполнен');
+                    $('#loginFormContainer').hide();
+                }
+                break;
+                case 'login_by_token_failed':
+                {
+                    localStorage.removeItem('token');
+                    toast('fail', 'Токен устарел');
+                }
+                case 'login_required':
+                {
+                    // display login form here
+                    $('#loginFormContainer').fadeIn();
+
+                } break;
+                case 'login_by_credentials_failed':
+                {
+                    toast('fail', 'Неверный логин и/или пароль');
+                } break;
+
+
+            }
+
+        }
+
+        function pushEvent(type, args)
+        {
+            processEvent(type, args);
+        }
+
+        $(document).ready(function() {
+            $('#loginFormButton').click(function() {
+                pushEvent('login', {'login': $('#loginFormLogin').val(), 'password': $('#loginFormPasword').val()});
+            });
+        });
+
+        client.onConnect = function (frame) {
+            pushEvent('connected');
+/*
+
+            console.log(client);
+
+            client.subscribe('/user/error', (frame) =>
+            {
+                var message = '???';
+                try
+                {
+                    message = JSON.parse(frame.body).message;
+                } catch (e) 
+                {
+                    ;
+                }
+                toast('fail', 'Service response error: ' + message);
+            });
+
+            client.subscribe('/user/uctl/login', (frame) => 
+            {
+            
+                var token = undefined;
+                try
+                {
+                    token = JSON.parse(frame.body).token;
+                } catch (e) 
+                {
+                    ;
+                }
+
+                localStorage.setItem('token', token);
+                if (!token)
+                {
+                    toast('fail', 'Unknown auth error');
+                    return;
+                }
+
+                
+                toast('debug', 'Authed');
+            });
+
+            {          
+                var token = localStorage.getItem('token');
+                if (token)
+                {
+                    client.publish({destination: '/app/uctl/back', body: JSON.stringify({'token': token})}); 
+                }
+                else
+                {
+                    client.publish({destination: '/app/uctl/login', body: JSON.stringify({'login': 'test2', 'password': 'te-'})}); 
+                }
+                // client.publish({destination: '/app/register', body: JSON.stringify({'login': 'test2', 'password': 'te-'})}); 
+            }
+*/
+        };
+
+        client.onStompError = function (frame) 
+        {
+          console.log('Broker reported error: ' + frame.headers['message']);
+          console.log('Additional details: ' + frame.body);
+        };
+
+        client.activate();
+
     </script>
 </body>
 </html>

@@ -2,14 +2,14 @@ package apo.managers.command.impl.commands;
 
 import java.util.List;
 
-import org.apache.hc.core5.util.Asserts;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
 
 import apo.managers.command.ICommandHandler;
 import apo.managers.session.ISessionManager;
 import apo.managers.session.IUserSession;
-import apo.server.ServerHandler.ConnectionContext;
+import apo.server.ConnectionContext;
 
 @Component
 public class AuthByCredentialsCommand implements ICommandHandler
@@ -44,7 +44,7 @@ public class AuthByCredentialsCommand implements ICommandHandler
 		try 
 		{
 			IUserSession session = session_manager.auth(ctx.connection.getIp(), login, password);
-			Asserts.notNull(session, "session");
+			Assert.notNull(session, "session");
 			ctx.session = session;
 			return List.of(type, session.getToken());
 		} catch (Exception ex)

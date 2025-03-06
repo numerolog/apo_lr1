@@ -9,7 +9,7 @@ import apo.managers.command.ICommandHandler;
 import apo.managers.conversation.IConversation;
 import apo.managers.conversation.IConversationManager;
 import apo.managers.conversation.IMessage;
-import apo.server.ServerHandler.ConnectionContext;
+import apo.server.ConnectionContext;
 import apo.utils.Utils;
 import apo.utils.dataof.GSONUtils;
 

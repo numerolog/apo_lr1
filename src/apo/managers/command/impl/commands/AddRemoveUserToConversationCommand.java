@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import apo.managers.command.ICommandHandler;
 import apo.managers.conversation.IConversationManager;
-import apo.server.ServerHandler.ConnectionContext;
+import apo.server.ConnectionContext;
 
 @Component
 public class AddRemoveUserToConversationCommand implements ICommandHandler

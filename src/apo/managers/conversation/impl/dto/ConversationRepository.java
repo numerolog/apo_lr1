@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
-//@Component
 public interface ConversationRepository extends JpaRepository<Conversation, Integer> 
 {
 
@@ -26,19 +25,6 @@ public interface ConversationRepository extends JpaRepository<Conversation, Inte
 	{
 		return inConversation0(chat_id, user_id) > 0;
 	}
-
-	
-	
-//	@PersistenceContext
-//	private EntityManager em;
-//	
-//	public boolean inConversation(int chat_id, int user_id) 
-//	{
-//		return em.createQuery("select COUNT(c) from Conversation c LEFT JOIN c.members m where c.id = ?1 and (c.owner_user_id = ?2 or m.user_id = ?2)", Long.class)
-//				.setParameter(1, chat_id)
-//				.setParameter(2, user_id)
-//				.getSingleResult() > 0;
-//	}
 
 }
 
