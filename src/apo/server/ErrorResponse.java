@@ -1,18 +1,12 @@
 package apo.server;
 
-import apo.controllers.BaseRequest;
+import apo.controllers.BaseBody;
 
-public class ErrorResponse extends BaseRequest
+public class ErrorResponse extends BaseBody
 {
 
 	private String message;
 		
-//	public ErrorResponse(String message) 
-//	{
-//		super();
-//		this.message = message;
-//	}
-
 	public ErrorResponse(String request_id, String message) 
 	{
 		super(request_id);

@@ -1,9 +1,13 @@
 package apo.managers.conversation.impl;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import apo.managers.ManagerException;
 import apo.managers.conversation.IConversation;
@@ -16,7 +20,6 @@ import apo.managers.conversation.impl.dto.Message;
 import apo.managers.conversation.impl.dto.MessageFlag;
 import apo.managers.conversation.impl.dto.MessageRepository;
 import apo.managers.event.IEventManager;
-import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 
 @Component
@@ -31,45 +34,26 @@ public class ConversationManagerImpl implements IConversationManager
 
     @Autowired
     private IEventManager event_manager;
-    
-//	private Conversation getOrLoad(int chat_id) 
-//	{
-//		if (!conversation_repository.existsById(chat_id))
-//			return null;
-//		return conversation_repository.findByIdEquals(chat_id);// conversations.get(chat_id);
-//	}
-
-//	private Conversation commit(Conversation conv) 
-//	{
-//		return conversation_repository.save(conv);
-//	}
 	
 	@Override
-	public Collection<IConversation> getList(int user_id) 
+	public List<? extends IConversation> getList(int user_id) 
 	{
-		return (Collection<IConversation>)(Object)conversation_repository.findJoined(user_id);
+		return conversation_repository.findJoined(user_id);
 	}
 
 	@Override
 	@Transactional
-	public Collection<IMessage> getList(int user_id, int chat_id, int offset_from, int offset_size) throws ManagerException 
+	public Collection<? extends IMessage> getList(int user_id, int chat_id, int offset_from, int offset_size) throws ManagerException 
 	{
-//		if (!getList(user_id).stream().filter(c -> c.getId() == chat_id).findAny().isPresent())
 		if (!conversation_repository.inConversation(chat_id, user_id))
 			throw new ManagerException("user not in conversation");
 
-		var r = (Collection<IMessage>)(Object)message_repository.find(chat_id, offset_from, offset_size);
-		
-		for (var msg : r)
-			toggleMessageFlag(user_id, chat_id, msg.getId(), MessageFlag.READEN_FLAG, false);
-		return r;
+		return message_repository.find(chat_id, offset_from, offset_size);
 	}
 
-	@Override
-	@Transactional
-	public IMessage putMessage(int user_id, int chat_id, String message_text) throws ManagerException 
+	@Transactional()
+	public IMessage putMessage0(int user_id, int chat_id, String message_text) throws ManagerException 
 	{
-//		if (!getList(user_id).stream().filter(c -> c.getId() == chat_id).findAny().isPresent())
 		if (!conversation_repository.inConversation(chat_id, user_id))
 			throw new ManagerException("user not in conversation");
 
@@ -82,20 +66,29 @@ public class ConversationManagerImpl implements IConversationManager
 		
 		conv.getMessages().add(msg);
 		
-		event_manager.noticeNewMessage(user_id, chat_id, msg.getId());
-		
 		return msg;
 	}
-
-	@Override
+	
+	@Transactional()
+	public IMessage putMessage(int user_id, int chat_id, String message_text) throws ManagerException 
+	{
+		var msg = putMessage0(user_id, chat_id, message_text);
+		var conv = conversation_repository.findByIdEquals(chat_id);
+		for (var member : conv.getMembersId())
+			event_manager.noticeNewMessage(member, chat_id, msg.getId());
+		return msg;
+	}
+	
 	@Transactional
-//	public void markReaden(int user_id, int chat_id, int message_id) throws ManagerException
-	public void toggleMessageFlag(int user_id, int chat_id, int message_id, int flag, boolean remove) throws ManagerException
+	public boolean toggleMessageFlag0(int user_id, int chat_id, int message_id, int flag, boolean remove) throws ManagerException
 	{
 		if (!remove)
 		{
 			if (message_repository.hasFlag(chat_id, message_id, user_id, flag))
-				return;
+			{
+				System.err.println("has flag on " + chat_id + " " + message_id + " " + user_id + " " + flag);
+				return false;
+			}
 		}
 		else
 		{
@@ -103,13 +96,16 @@ public class ConversationManagerImpl implements IConversationManager
 				throw new ManagerException("readen flag unremovable");
 		}
 		
-//		if (!getList(user_id).stream().filter(c -> c.getId() == chat_id).findAny().isPresent())
 		if (!conversation_repository.inConversation(chat_id, user_id))
 			throw new ManagerException("user not in conversation");
-		
-//		var conv = getOrLoad(chat_id);
+	  
 		var msg = message_repository.findById(chat_id, message_id);
-		
+
+		if (flag == MessageFlag.READEN_FLAG && msg.getAuthor_id() == user_id)
+			return false;
+
+		//TODO: спам сообщениями всё ломает ибо транзакции везде наставлены абыкак
+		// Record has changed since last read in table 'message_flag'
 		if (remove)
 		{
 			if (!message_repository.removeFlag(chat_id, message_id, user_id, flag))
@@ -123,10 +119,18 @@ public class ConversationManagerImpl implements IConversationManager
 			readen.flag = flag;
 			msg.getFlags().add(readen);
 		}
-		
-		event_manager.noticeAddRemoveMessageFlag(user_id, chat_id, message_id, flag, remove);
+		return true;
 	}
 	
+	@Transactional()
+	public void toggleMessageFlag(int user_id, int chat_id, int message_id, int flag, boolean remove) throws ManagerException
+	{
+		if (!toggleMessageFlag0(user_id, chat_id, message_id, flag, remove))
+			return;
+		var conv = conversation_repository.findByIdEquals(chat_id);
+		for (var member : conv.getMembersId())
+			event_manager.noticeAddRemoveMessageFlag(member, chat_id, message_id, flag, remove);
+	}
 	
 	@Override
 	@Transactional
@@ -161,18 +165,16 @@ public class ConversationManagerImpl implements IConversationManager
 			member.conversation = conv;
 		}
 				
-//		commit(conv);
-		
-		event_manager.noticeAddRemoveConversation(target_user_id, chat_id, target_user_id, removeSelf);
+		event_manager.noticeAddRemoveConversation(target_user_id, chat_id, target_user_id, remove);
 	}
 	
 	
 	@Override
 	@Transactional
-	public IConversation create(int user_id) throws ManagerException 
+	public IConversation create(int user_id, String name) throws ManagerException 
 	{
 		var conv = new Conversation();
-		
+		conv.name = name;
 		conv.owner_user_id = user_id;
 
 		conversation_repository.save(conv);
@@ -183,17 +185,4 @@ public class ConversationManagerImpl implements IConversationManager
 		return conv;
 	}
 	
-	@PostConstruct
-	void postInit()
-	{
-//		try {
-//			if (getOrLoad(1) == null)
-//				create(1);
-//		} catch (ManagerException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-		
-	}
-
 }

@@ -1,28 +1,28 @@
 package apo.server;
 
-import java.io.IOException;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.context.event.EventListener;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
+import org.springframework.messaging.simp.SimpMessageType;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionConnectEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
-
-import apo.managers.command.IConnection;
 
 @Component
 public class StompListener 
 {
 	private final Map<String, ConnectionContext> connections = new ConcurrentHashMap<>();
 
-//	public static final String HEADER_CLIENT_ID_KEY = "client_id";
-//
-//	@Autowired
-//	private SimpMessagingTemplate messagingTemplate;
+	@Autowired
+	@Lazy
+	private SimpMessagingTemplate messagingTemplate;
 	
 	@EventListener
     private void handleSessionConnected(SessionConnectEvent event) 
@@ -30,22 +30,26 @@ public class StompListener
 		SimpMessageHeaderAccessor headers = SimpMessageHeaderAccessor.wrap(event.getMessage());
 		System.err.println(headers);
 		String ip = String.valueOf(headers.getSessionAttributes().get(ConnectionIpInterceptor.IP_SESSION_ATTRIBUTE_KEY));
-//		String client_id = String.valueOf(headers.getFirstNativeHeader(HEADER_CLIENT_ID_KEY));
+		String session_id = headers.getSessionId();
     	var ctx = new ConnectionContext();
-    	ctx.connection = new IConnection() {
-			
-//			@Override
-//			public void sendText(String text) throws IOException 
-//			{
-//				throw new IOException();
-////				messagingTemplate.convertAndSendToUser(text, ip, client_id);
-//			}
+    	ctx.connection = new IConnection() 
+    	{
 			
 			@Override
 			public String getIp() 
 			{
 				return ip;
 			}
+
+			@Override
+			public void send(String path, Object object) 
+			{
+				SimpMessageHeaderAccessor headerAccessor = SimpMessageHeaderAccessor.create(SimpMessageType.MESSAGE);
+				headerAccessor.setSessionId(session_id);
+				headerAccessor.setLeaveMutable(true);
+				
+				messagingTemplate.convertAndSendToUser(session_id, path, object, headerAccessor.getMessageHeaders());
+			}		
 		};
 		
     	connections.put(headers.getSessionId(), ctx);
@@ -64,5 +68,10 @@ public class StompListener
     {
     	return connections.get(sessionId);
     }
+
+	public List<ConnectionContext> getContextsByUserId(int user_id) 
+	{
+		return connections.entrySet().stream().filter(pair -> pair.getValue().connection != null && pair.getValue().session != null && pair.getValue().session.getUserId() == user_id).map(Entry::getValue).toList();
+	}
     
 }

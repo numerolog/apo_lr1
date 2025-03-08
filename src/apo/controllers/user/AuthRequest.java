@@ -1,8 +1,8 @@
 package apo.controllers.user;
 
-import apo.controllers.BaseRequest;
+import apo.controllers.BaseBody;
 
-public class AuthRequest extends BaseRequest
+public class AuthRequest extends BaseBody
 {
 
 	private String login;

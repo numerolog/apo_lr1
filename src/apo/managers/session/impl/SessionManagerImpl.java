@@ -1,5 +1,6 @@
 package apo.managers.session.impl;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,7 +14,6 @@ import apo.managers.session.ISessionManager;
 import apo.managers.session.IUserSession;
 import apo.managers.session.impl.dto.User;
 import apo.managers.session.impl.dto.UserRepository;
-import jakarta.annotation.PostConstruct;
 
 @Component
 public class SessionManagerImpl implements ISessionManager
@@ -21,13 +21,14 @@ public class SessionManagerImpl implements ISessionManager
 
 	static class SessionImpl implements IUserSession
 	{
-		Integer user_id;
+		int user_id;
+		String user_name;
 		boolean valid;
 		String ip;
 		String token;
 		
 		@Override
-		public Integer getUserId() 
+		public int getUserId() 
 		{
 			return user_id;
 		}
@@ -47,7 +48,7 @@ public class SessionManagerImpl implements ISessionManager
 		{
 			return token;
 		}
-		
+
 	}
 
 	@Autowired
@@ -90,6 +91,7 @@ public class SessionManagerImpl implements ISessionManager
 		
 		r.valid = true;
 		r.user_id = user.getId();
+		r.user_name = user.getLogin();
 		
 		sessions.put(r.token, r);
 		return r;
@@ -120,18 +122,21 @@ public class SessionManagerImpl implements ISessionManager
 	{
 		((SessionImpl) session).invalidate();
 	}
-	
-	@PostConstruct
-	void postInit()
+
+	@Override
+	public User getUser(int user_id) throws ManagerException 
 	{
-		var found = user_repository.findByLogin("test");
-		if (found == null)
-		{
-			found = new User();
-			found.setLogin("test");
-			found.setPassword("password");
-			user_repository.save(found);
-		}
+		var user = user_repository.findById(user_id);
+		if (user.isEmpty())
+			throw new ManagerException("user not found");
+			
+		return user.get();
 	}
-	
+
+	@Override
+	public List<User> search(String term) 
+	{
+		return user_repository.search(term);
+	}
+
 }

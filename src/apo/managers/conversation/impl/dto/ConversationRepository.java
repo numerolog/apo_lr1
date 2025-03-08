@@ -16,9 +16,8 @@ public interface ConversationRepository extends JpaRepository<Conversation, Inte
 	public List<Conversation> findJoined(int user_id);
 
 //	@Query("SELECT CASE WHEN COUNT(c) > 0 THEN true ELSE false FROM Conversation c LEFT JOIN c.members m WHERE c.id = ?1 AND (c.owner_user_id = ?2 OR m.user_id = ?2)")
-//	public boolean inConversation(int chat_id, int user_id);
-
-	@Query("SELECT COUNT(c) FROM Conversation c LEFT JOIN c.members m WHERE c.id = ?1 AND (c.owner_user_id = ?2 OR m.user_id = ?2)")
+	//@Query("SELECT COUNT(c) FROM Conversation c LEFT JOIN c.members m WHERE c.id = ?1 AND (c.owner_user_id = ?2 OR m.user_id = ?2)")
+	@Query("SELECT COUNT(c) FROM Conversation c LEFT JOIN c.members m WHERE c.id = ?1 AND m.user_id = ?2")
 	public long inConversation0(int chat_id, int user_id);
 	
 	default boolean inConversation(int chat_id, int user_id)

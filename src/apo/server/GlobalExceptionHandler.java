@@ -1,32 +1,21 @@
 package apo.server;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.handler.annotation.MessageExceptionHandler;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
-import org.springframework.messaging.simp.SimpMessageType;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 
-import apo.controllers.BaseRequest;
 import apo.controllers.PublicException;
 import apo.managers.ManagerException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler 
 {
-
-	@Autowired
-	private SimpMessagingTemplate messagingTemplate;
 	
 	@MessageExceptionHandler({Throwable.class})
-	public void handleException(Throwable t,/* BaseRequest request,*/ SimpMessageHeaderAccessor headers) 
+	public void handleException(Throwable t, SimpMessageHeaderAccessor headers, ConnectionContext ctx) 
 	{
 		t.printStackTrace();
 		System.err.println("Send error...");
-		//System.err.println("request=" + request);
-		SimpMessageHeaderAccessor headerAccessor = SimpMessageHeaderAccessor.create(SimpMessageType.MESSAGE);
-		headerAccessor.setSessionId(headers.getSessionId());
-		headerAccessor.setLeaveMutable(true);
 		
 		String message;
 		switch (t)
@@ -40,8 +29,8 @@ public class GlobalExceptionHandler
 			default:
 				message = "unknown";
 		};
-		System.err.println(headers);
-		messagingTemplate.convertAndSendToUser(headers.getSessionId(), "/error", new ErrorResponse(headers.getFirstNativeHeader("request_id"), message), headerAccessor.getMessageHeaders());
+		
+		ctx.connection.send("/error", new ErrorResponse(headers.getFirstNativeHeader("request_id"), message));
 	}
 	
 }

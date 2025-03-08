@@ -3,7 +3,7 @@ package apo.managers.session;
 public interface IUserSession 
 {
 
-	Integer getUserId();
+	int getUserId();
 
 	String getToken();
 

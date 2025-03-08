@@ -5,8 +5,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import com.google.gson.annotations.Expose;
+import java.util.stream.Collectors;
 
 import apo.managers.conversation.IConversation;
 import jakarta.persistence.CascadeType;
@@ -22,20 +21,19 @@ import jakarta.persistence.OneToMany;
 public class Conversation implements IConversation 
 {
 
-    @Expose
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Expose
     @Column(nullable = false)
 	public int owner_user_id;
 
-    @Expose(serialize=false, deserialize=false)
+    @Column(nullable = false)
+	public String name;
+    
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private Set<ConversationMember> members = new HashSet<>();
 
-    @Expose(serialize=false, deserialize=false)
     @OneToMany(mappedBy = "conversation", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<Message> messages = new ArrayList<>();
     
@@ -53,10 +51,26 @@ public class Conversation implements IConversation
 	{
 		this.id = id;
 	}
+	
+	public String getName() 
+	{
+		return name;
+	}
 
+	public void setName(String name) 
+	{
+		this.name = name;
+	}
+//todo: убрать
 	public int getOwner_user_id() 
 	{
 		return owner_user_id;
+	}
+
+	@Override
+	public int getOwnerId() 
+	{
+		return getOwner_user_id();
 	}
 
 	public void setOwner_user_id(int owner_user_id) 
@@ -69,6 +83,11 @@ public class Conversation implements IConversation
 		return members;
 	}
 
+	public Set<Integer> getMembersId() 
+	{
+		return getMembers().stream().map(ConversationMember::getUser_id).collect(Collectors.toSet());
+	}
+
 	public void setMembers(Set<ConversationMember> members) 
 	{
 		this.members = members;
@@ -77,12 +96,6 @@ public class Conversation implements IConversation
 	public Collection<Message> getMessages() 
 	{
 		return messages;
-	}
-
-	@Override
-	public Object getScopeData(int scope_id) 
-	{
-		return this;
 	}
 
 }

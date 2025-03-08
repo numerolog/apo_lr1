@@ -1,36 +1,31 @@
 package apo.managers.conversation.impl.dto;
 
-import com.google.gson.annotations.Expose;
+import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToOne;
-import java.time.LocalDateTime;
 
 // реакция или флаг о прочтении
 @Entity
 public class MessageFlag 
 {
 
-    @Expose
     @Id
     @GeneratedValue
     private int id;
 
-    @Expose(serialize=false, deserialize=false)
     @OneToOne
     public Message message;
 
-    @Expose
     @Column(nullable = false)
 	public int user_id;
 
-    // 0 - сообщение прочитано, все остальное - код емодзи
+    // 0 - сообщение прочитано, 1 - отредактировано(unused), числа после первого кода емодзи - коды емодзи, остальное - резерв
     public static final int READEN_FLAG = 0;
     
-    @Expose
     @Column(nullable = false)
 	public int flag = READEN_FLAG;
     

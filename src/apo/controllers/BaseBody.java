@@ -1,22 +1,22 @@
 package apo.controllers;
 
-public class BaseRequest 
+public class BaseBody 
 {
 
 	private String request_id;
 	
-	public BaseRequest()
+	public BaseBody()
 	{
 		;
 	}
 	
-	public BaseRequest(String request_id) 
+	public BaseBody(String request_id) 
 	{
 		super();
 		this.request_id = request_id;
 	}
 
-	public BaseRequest(BaseRequest request) 
+	public BaseBody(BaseBody request) 
 	{
 		this(request != null ? request.request_id : "__NO_REQUEST__");
 	}

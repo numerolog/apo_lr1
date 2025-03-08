@@ -3,8 +3,6 @@ package apo.managers.conversation.impl.dto;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.google.gson.annotations.Expose;
-
 import apo.managers.conversation.IMessage;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -19,24 +17,17 @@ import jakarta.persistence.OneToMany;
 public class Message implements IMessage
 {
 	
-    @Expose
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Expose(serialize=false, deserialize=false)
     @ManyToOne
     private Conversation conversation;
 
-    @Expose(serialize=false, deserialize=false)
-//TODO:    @Expose
-    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private Set<MessageFlag> flags = new HashSet<>();
     
-    @Expose
     private int author_id;
-    
-    @Expose
     private String text;
     
     public Message() 
@@ -72,12 +63,6 @@ public class Message implements IMessage
 	public void setConversation(Conversation conversation) 
 	{
 		this.conversation = conversation;
-	}
-
-	@Override
-	public Object getScopeData(int scope_id) 
-	{
-		return this;
 	}
 
 	public Set<MessageFlag> getFlags() 

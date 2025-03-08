@@ -1,8 +1,8 @@
 package apo.controllers.user;
 
-import apo.controllers.BaseRequest;
+import apo.controllers.BaseBody;
 
-public class BackRequest extends BaseRequest
+public class BackRequest extends BaseBody
 {
 
 	private String token;

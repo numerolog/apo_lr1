@@ -1,6 +1,9 @@
 package apo.managers.session;
 
+import java.util.List;
+
 import apo.managers.ManagerException;
+import apo.managers.session.impl.dto.User;
 
 public interface ISessionManager 
 {
@@ -13,6 +16,9 @@ public interface ISessionManager
 	boolean isValid(IUserSession session);
 
 	void logout(IUserSession session);
+	
+	User getUser(int user_id) throws ManagerException;
 
+	List<User> search(String term);
 
 }
